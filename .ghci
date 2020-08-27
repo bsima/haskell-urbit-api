@@ -1,0 +1,9 @@
+:set -XOverloadedStrings
+:set prompt "λ "
+:set prompt-cont "| "
+:set -Wall
+-- :set -haddock
+-- ':iq Module M' -> 'import qualified Module as M'
+:def iq (\arg -> let [x, y] = Prelude.words arg in return $ "import qualified " ++ x ++ " as " ++ y)
+:def hoogle \s -> return $ ":! hoogle search --count=15 \"" ++ s ++ "\""
+:def hdoc \s -> return $ ":! hoogle search --info \"" ++ s ++ "\""
