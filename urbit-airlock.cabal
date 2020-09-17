@@ -2,7 +2,7 @@ name:                urbit-airlock
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/bsima/urbit-airlock#readme
+homepage:            https://github.com/bsima/urbit-airlock
 license:             BSD3
 license-file:        LICENSE
 author:              Ben Sima
@@ -28,9 +28,16 @@ library
     wreq
 
 executable urlock
-  hs-source-dirs:      urlock
+  hs-source-dirs:      .
   main-is:             Main.hs
   default-language:    Haskell2010
+  build-depends:
+    base >= 4.7 && < 5,
+    urbit-airlock
+
+Test-Suite test-urbit-airlock
+  type: exitcode-stdio-1.0
+  main-is: test.hs
   build-depends:
     base >= 4.7 && < 5,
     urbit-airlock
