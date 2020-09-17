@@ -1,7 +1,16 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import System.Exit (exitFailure)
+import Urbit.Airlock
 
 main = do
-  putStrLn "goodbye world"
-  exitFailure
+  let ship = Ship {
+    session = Nothing,
+    lastEventId = 0,
+    url = "http://localhost:8081",
+    code = "lidlut-tabwed-pillex-ridrup",
+    sseClient = False
+  }
+  connect ship
+  putStrLn "success"
