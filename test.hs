@@ -10,7 +10,8 @@ main = do
     lastEventId = 0,
     url = "http://localhost:8081",
     code = "lidlut-tabwed-pillex-ridrup",
-    sseClient = False
+    sseClient = False,
+    name = "zod"
   }
   connect ship
   putStrLn "success"

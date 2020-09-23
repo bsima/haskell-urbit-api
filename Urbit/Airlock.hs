@@ -1,7 +1,13 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Urbit.Airlock where
+module Urbit.Airlock
+  ( Ship(..),
+    App,
+    Mark,
+    connect,
+    poke,
+  ) where
 
 import Control.Lens
 import qualified Data.Aeson as Aeson
@@ -15,10 +21,16 @@ import qualified Network.Wreq.Session as Session
 
 data Ship = Ship
   { session :: Maybe Session.Session,
+    -- | Track the latest event we saw (needed for poking).
     lastEventId :: Int,
+    -- | Internet-facing access point, like 'http://sampel-palnet.arvo.network'
     url :: Url,
+    -- | Login code, `+code` in the dojo. Don't share this publically.
     code :: Text,
-    sseClient :: Bool
+    -- | Not implemented yet...
+    sseClient :: Bool,
+    -- | The `@p` of the ship
+    name :: Text
   }
   deriving (Show)
 
@@ -31,7 +43,6 @@ type Url = String
 type App = Text
 type Path = Text
 type Mark = Text
-type ShipName = Text
 type Subscription = Text
 
 
@@ -40,7 +51,7 @@ nextEventId :: Ship -> Int
 nextEventId Ship { lastEventId } = lastEventId + 1
 
 
--- |
+-- | Connect and login to the ship.
 connect :: Ship -> IO (Wreq.Response ByteString)
 connect ship = do
   -- post to <ship>/~/login with json {"password": <code>}
@@ -49,20 +60,28 @@ connect ship = do
   return r
 
 
--- |
-poke :: Ship -> ShipName -> App -> Mark -> Aeson.Value -> IO (Wreq.Response ByteString)
-poke ship shipName app mark json = do
+-- | Poke a ship.
+poke ::
+  Ship ->
+  -- | Which gall application are you trying to poke?
+  App ->
+  -- | What mark should be applied to the data you are sending?
+  Mark ->
+  Aeson.Value ->
+  IO (Wreq.Response ByteString)
+poke ship app mark json = do
   r <- Wreq.put (channelUrl ship)
          ["id" := nextEventId ship
-         , "action" := ("poke"::Text)
-         , "ship" := shipName
+         , "action" := ("poke" :: Text)
+         , "ship" := (name ship)
          , "app" := app
          , "mark" := mark
-         , "json" := Aeson.encode json]
+         , "json" := Aeson.encode json
+         ]
   return r
 
 
--- |
+-- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
 ack :: Ship -> Int -> IO (Wreq.Response ByteString)
 ack ship eventId = do
   r <- Wreq.post (channelUrl ship)
@@ -77,7 +96,7 @@ ack ship eventId = do
 
 
 -- |
-subscribe :: Ship -> ShipName -> App -> Path -> IO Subscription
+subscribe :: Ship -> App -> Path -> IO Subscription
 subscribe = undefined
 
 
