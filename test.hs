@@ -41,6 +41,7 @@ fakezod :: Ship
 fakezod =
   Ship
     { session = Nothing,
+      name = "zod",
       lastEventId = 0,
       url = "http://localhost:8081",
       code = "lidlut-tabwed-pillex-ridrup",

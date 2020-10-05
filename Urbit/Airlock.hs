@@ -12,9 +12,10 @@ where
 
 import Control.Lens
 import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Lazy as L
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
+import qualified Data.Text.Encoding as Encoding
 import Network.Wreq (FormParam ((:=)))
 import qualified Network.Wreq as Wreq
 import qualified Network.Wreq.Session as Session
@@ -23,6 +24,7 @@ import qualified Network.Wreq.Session as Session
 
 data Ship = Ship
   { session :: Maybe Session.Session,
+    name :: ShipName,
     -- | Track the latest event we saw (needed for poking).
     lastEventId :: Int,
     -- | Internet-facing access point, like 'http://sampel-palnet.arvo.network'
@@ -47,7 +49,7 @@ type Mark = Text
 
 type Subscription = Text
 
--- | The `@p` for the ship.
+-- | The `@p` for the ship (no leading ~).
 type ShipName = Text
 
 -- |
@@ -55,12 +57,10 @@ nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
 -- | Connect and login to the ship. Returns the 'urbauth' cookie.
-connect :: Ship -> IO (Maybe ByteString)
+connect :: Ship -> IO (Maybe Wreq.Cookie)
 connect ship = do
-  -- post to <ship>/~/login with json {"password": <code>}
-  let params = Wreq.defaults & Wreq.param "password" .~ [(code ship)]
-  r <- Wreq.getWith params (url ship <> "/~/login")
-  return $ r ^? Wreq.responseHeader "Set-Cookie"
+  r <- Wreq.postWith Wreq.defaults (url ship <> "/~/login") ["password" := (code ship)]
+  return $ r ^? Wreq.responseCookie (Encoding.encodeUtf8 $ "urbauth-~" <> name ship)
 
 -- | Poke a ship.
 poke ::
