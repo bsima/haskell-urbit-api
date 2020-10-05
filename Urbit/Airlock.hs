@@ -12,7 +12,8 @@ where
 
 import Control.Lens
 import qualified Data.Aeson as Aeson
-import Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as L
+import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Network.Wreq (FormParam ((:=)))
 import qualified Network.Wreq as Wreq
@@ -53,13 +54,13 @@ type ShipName = Text
 nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
--- | Connect and login to the ship.
-connect :: Ship -> IO (Wreq.Response ByteString)
+-- | Connect and login to the ship. Returns the 'urbauth' cookie.
+connect :: Ship -> IO (Maybe ByteString)
 connect ship = do
   -- post to <ship>/~/login with json {"password": <code>}
   let params = Wreq.defaults & Wreq.param "password" .~ [(code ship)]
   r <- Wreq.getWith params (url ship <> "/~/login")
-  return r
+  return $ r ^? Wreq.responseHeader "Set-Cookie"
 
 -- | Poke a ship.
 poke ::
@@ -72,7 +73,7 @@ poke ::
   -- | What mark should be applied to the data you are sending?
   Mark ->
   a ->
-  IO (Wreq.Response ByteString)
+  IO (Maybe L.ByteString)
 poke ship shipName app mark json = do
   r <-
     Wreq.put
@@ -84,10 +85,10 @@ poke ship shipName app mark json = do
         "mark" := mark,
         "json" := Aeson.encode json
       ]
-  return r
+  return $ r ^? Wreq.responseBody
 
 -- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
-ack :: Ship -> Int -> IO (Wreq.Response ByteString)
+ack :: Ship -> Int -> IO (Wreq.Response L.ByteString)
 ack ship eventId = do
   r <-
     Wreq.post

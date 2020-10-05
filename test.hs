@@ -7,6 +7,7 @@ module Main where
 import Control.Exception (SomeException (..), try)
 import Data.Aeson (KeyValue ((.=)))
 import qualified Data.Aeson as Aeson
+import Data.Maybe (isJust, fromJust)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
@@ -14,19 +15,12 @@ import Urbit.Airlock
 
 main :: IO ()
 main = do
-  let ship =
-        Ship
-          { session = Nothing,
-            lastEventId = 0,
-            url = "http://localhost:8081",
-            code = "lidlut-tabwed-pillex-ridrup",
-            sseClient = False
-          }
+  let ship = fakezod
+  testing "ship connection" $ isJust <$> connect ship
+  cookie <- fromJust <$> connect ship
 
-  testing "ship connection" $ connect ship
-
-  testing "poke ship" $
-    poke ship "zod" "chat-hook" "json" $
+  testing "poke ship" $ isJust <$>
+    (poke ship "zod" "chat-hook" "json" $
       Aeson.object
         [ "message"
             .= Aeson.object
@@ -40,16 +34,30 @@ main = do
                       "letter" .= Aeson.object ["text" .= Text.pack "hello world!"]
                     ]
               ]
-        ]
+        ])
+
+
+fakezod :: Ship
+fakezod =
+  Ship
+    { session = Nothing,
+      lastEventId = 0,
+      url = "http://localhost:8081",
+      code = "lidlut-tabwed-pillex-ridrup",
+      sseClient = False
+    }
 
 -- | Poor man's testing framework
-testing :: Show a => Text -> IO a -> IO ()
+testing :: Text -> IO Bool -> IO ()
 testing description f =
   (putStrLn $ replicate 80 '-') >> try f >>= \case
     Left (err :: SomeException) -> do
       Text.IO.putStrLn $ "FAIL: " <> description
       putStrLn $ show err
-    Right _ ->
+    Right False -> do
+      Text.IO.putStrLn $ "FAIL: " <> description
+      putStrLn $ "expected True, got False"
+    Right True ->
       Text.IO.putStrLn $ "PASS: " <> description
 
 {-
