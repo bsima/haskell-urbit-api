@@ -56,11 +56,10 @@ type ShipName = Text
 nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
--- | Connect and login to the ship. Returns the 'urbauth' cookie.
-connect :: Ship -> IO (Maybe Wreq.Cookie)
-connect ship = do
-  r <- Wreq.postWith Wreq.defaults (url ship <> "/~/login") ["password" := (code ship)]
-  return $ r ^? Wreq.responseCookie (Encoding.encodeUtf8 $ "urbauth-~" <> name ship)
+-- | Connect and login to the ship.
+connect :: Ship -> IO (Wreq.Response L.ByteString)
+connect ship =
+  Wreq.post (url ship <> "/~/login") ["password" := (code ship)]
 
 -- | Poke a ship.
 poke ::
@@ -73,30 +72,26 @@ poke ::
   -- | What mark should be applied to the data you are sending?
   Mark ->
   a ->
-  IO (Maybe L.ByteString)
-poke ship shipName app mark json = do
-  r <-
-    Wreq.put
-      (channelUrl ship)
-      [ "id" := nextEventId ship,
-        "action" := ("poke" :: Text),
-        "ship" := shipName,
-        "app" := app,
-        "mark" := mark,
-        "json" := Aeson.encode json
-      ]
-  return $ r ^? Wreq.responseBody
+  IO (Wreq.Response L.ByteString)
+poke ship shipName app mark json =
+  Wreq.post
+    (channelUrl ship)
+    [ "id" := nextEventId ship,
+      "action" := ("poke" :: Text),
+      "ship" := shipName,
+      "app" := app,
+      "mark" := mark,
+      "json" := Aeson.encode json
+    ]
 
 -- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
 ack :: Ship -> Int -> IO (Wreq.Response L.ByteString)
-ack ship eventId = do
-  r <-
-    Wreq.post
-      (channelUrl ship)
-      [ "action" := ("ack" :: Text),
-        "event-id" := eventId
-      ]
-  return r
+ack ship eventId =
+  Wreq.post
+    (channelUrl ship)
+    [ "action" := ("ack" :: Text),
+      "event-id" := eventId
+    ]
 
 -- TODO
 -- ssePipe :: Ship -> IO _
