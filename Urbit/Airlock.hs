@@ -7,6 +7,7 @@ module Urbit.Airlock
     Mark,
     connect,
     poke,
+    ack,
   )
 where
 

@@ -19,27 +19,35 @@ main :: IO ()
 main = do
   let ship = fakezod
 
-  testing "ship connection" $ isJust <$> do
-    r <- connect ship
-    return $ r ^? Wreq.responseBody
+  testing "ship connection" $
+    isJust <$> do
+      r <- connect ship
+      return $ r ^? Wreq.responseBody
 
-  testing "poke ship" $ isJust <$> do
-    r <- (poke ship "zod" "chat-hook" "json" $
-           Aeson.object
-             [ "message"
-                 .= Aeson.object
-                   [ "path" .= Text.pack "/~/~zod/mc",
-                     "envelope"
-                       .= Aeson.object
-                         [ "uid" .= Text.pack "FIXME",
-                           "number" .= lastEventId ship,
-                           "author" .= Text.pack "~zod",
-                           "when" .= Text.pack "FIXME", -- int(time.time() * 1000)
-                           "letter" .= Aeson.object ["text" .= Text.pack "hello world!"]
-                         ]
-                   ]
-             ])
-    return $ r ^? Wreq.responseBody
+  testing "poke ship" $
+    isJust <$> do
+      r <-
+        poke ship "zod" "chat-hook" "json" $
+          Aeson.object
+            [ "message"
+                .= Aeson.object
+                  [ "path" .= Text.pack "/~/~zod/mc",
+                    "envelope"
+                      .= Aeson.object
+                        [ "uid" .= Text.pack "FIXME",
+                          "number" .= lastEventId ship,
+                          "author" .= Text.pack "~zod",
+                          "when" .= Text.pack "FIXME", -- int(time.time() * 1000)
+                          "letter" .= Aeson.object ["text" .= Text.pack "hello world!"]
+                        ]
+                  ]
+            ]
+      return $ r ^? Wreq.responseBody
+
+  testing "ack" $
+    isJust <$> do
+      r <- ack ship 1
+      return $ r ^? Wreq.responseBody
 
 fakezod :: Ship
 fakezod =
