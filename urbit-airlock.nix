@@ -8,7 +8,7 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson base bytestring lens text wai wai-extra wreq
+    aeson base bytestring lens text uuid wai wai-extra wreq
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [ base ];

@@ -23,6 +23,7 @@ library
     bytestring,
     lens,
     text,
+    uuid,
     wai,
     wai-extra,
     wreq

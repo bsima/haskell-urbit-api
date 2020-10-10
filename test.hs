@@ -13,7 +13,11 @@ import Data.Maybe (isJust)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
+import qualified Data.UUID as UUID
+import qualified Data.UUID.V4 as UUID
+import qualified Data.Word as Word
 import qualified Network.Wreq as Wreq
+import qualified Network.Wreq.Session as Session
 import qualified Numeric
 import qualified System.Random as Random
 import Urbit.Airlock
@@ -21,24 +25,25 @@ import Urbit.Airlock
 main :: IO ()
 main = do
   let ship = fakezod
+  sess <- Session.newSession
 
   testing "ship connection" $
     isJust <$> do
-      r <- connect ship
+      r <- connect sess ship
       return $ r ^? Wreq.responseBody
 
   testing "poke ship" $
     isJust <$> do
-      n <- Random.randomRIO (0, 100)
+      uid <- UUID.nextRandom
       r <-
-        poke ship "zod" "chat-hook" "json" $
+        poke sess ship "zod" "chat-hook" "json" $
           Aeson.object
             [ "message"
                 .= Aeson.object
                   [ "path" .= Text.pack "/~/~zod/mc",
                     "envelope"
                       .= Aeson.object
-                        [ "uid" .= (Text.pack $ base32 n),
+                        [ "uid" .= UUID.toText uid,
                           "number" .= lastEventId ship,
                           "author" .= Text.pack "~zod",
                           "when" .= Text.pack "1602118786225.497", -- int(time.time() * 1000)
@@ -50,19 +55,21 @@ main = do
 
   testing "ack" $
     isJust <$> do
-      r <- ack ship 1
+      r <- ack sess ship 1
       return $ r ^? Wreq.responseBody
+
 
 fakezod :: Ship
 fakezod =
   Ship
-    { session = Nothing,
+    { uid = "0123456789abcdef",
       name = "zod",
       lastEventId = 0,
       url = "http://localhost:8081",
       code = "lidlut-tabwed-pillex-ridrup",
       sseClient = False
     }
+
 
 -- | Poor man's testing framework
 testing :: Text -> IO Bool -> IO ()
@@ -76,19 +83,3 @@ testing description f =
       putStrLn $ "expected True, got False"
     Right True ->
       Text.IO.putStrLn $ "PASS: " <> description
-
-base32 :: Integer -> String
-base32 n = Numeric.showIntAtBase 32 Char.intToDigit n ""
-
-{-
-s = baseconvert.base(random.getrandbits(128), 10, 32, string=True).lower()
-uid = '0v' + '.'.join(s[i:i+5] for i in range(0, len(s), 5))[::-1]
-
-"path": "/~/~zod/mc",
-"envelope": {"uid": uid,
-             "number": 1,
-             "author": "~zod",
-             "when": ,
-             "letter": {"text": "hello world!"}}
-
--}

@@ -11,11 +11,13 @@ module Urbit.Airlock
   )
 where
 
-import Control.Lens
+import Control.Lens ()
+import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
+import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import Network.Wreq (FormParam ((:=)))
 import qualified Network.Wreq as Wreq
@@ -24,7 +26,9 @@ import qualified Network.Wreq.Session as Session
 -- import qualified Network.Wai.EventSource as Event
 
 data Ship = Ship
-  { session :: Maybe Session.Session,
+  { -- | A random string for your channel.
+    uid :: Text,
+    -- | The `@p` of your ship.
     name :: ShipName,
     -- | Track the latest event we saw (needed for poking).
     lastEventId :: Int,
@@ -38,7 +42,7 @@ data Ship = Ship
   deriving (Show)
 
 channelUrl :: Ship -> String
-channelUrl Ship {url} = url <> "/channel.js"
+channelUrl Ship {url} = url <> "/~/channel/1234567890abcdef"
 
 type Url = String
 
@@ -58,13 +62,14 @@ nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
 -- | Connect and login to the ship.
-connect :: Ship -> IO (Wreq.Response L.ByteString)
-connect ship =
-  Wreq.post (url ship <> "/~/login") ["password" := (code ship)]
+connect :: Session.Session -> Ship -> IO (Wreq.Response L.ByteString)
+connect sess ship =
+  Session.post sess (url ship <> "/~/login") ["password" := (code ship)]
 
 -- | Poke a ship.
 poke ::
   Aeson.ToJSON a =>
+  Session.Session ->
   Ship ->
   -- | To what ship will you send the poke?
   ShipName ->
@@ -74,25 +79,31 @@ poke ::
   Mark ->
   a ->
   IO (Wreq.Response L.ByteString)
-poke ship shipName app mark json =
-  Wreq.post
+poke sess ship shipName app mark json =
+  Session.post
+    sess
     (channelUrl ship)
-    [ "id" := nextEventId ship,
-      "action" := ("poke" :: Text),
-      "ship" := shipName,
-      "app" := app,
-      "mark" := mark,
-      "json" := Aeson.encode json
-    ]
+    $ Aeson.toJSON $
+      Aeson.object
+        [ "id" .= nextEventId ship,
+          "action" .= Text.pack "poke",
+          "ship" .= shipName,
+          "app" .= app,
+          "mark" .= mark,
+          "json" .= json
+        ]
 
 -- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
-ack :: Ship -> Int -> IO (Wreq.Response L.ByteString)
-ack ship eventId =
-  Wreq.post
+ack :: Session.Session -> Ship -> Int -> IO (Wreq.Response L.ByteString)
+ack sess ship eventId =
+  Session.post
+    sess
     (channelUrl ship)
-    [ "action" := ("ack" :: Text),
-      "event-id" := eventId
-    ]
+    $ Aeson.toJSON $
+      Aeson.object
+        [ "action" .= Text.pack "ack",
+          "event-id" .= eventId
+        ]
 
 -- TODO
 -- ssePipe :: Ship -> IO _
