@@ -8,20 +8,16 @@ import Control.Exception (SomeException (..), try)
 import Control.Lens ((^?))
 import Data.Aeson (KeyValue ((.=)))
 import qualified Data.Aeson as Aeson
-import qualified Data.Char as Char
 import Data.Maybe (isJust)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
 import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
-import qualified Data.Word as Word
 import qualified Network.Wreq as Wreq
 import qualified Network.Wreq.Session as Session
-import qualified Numeric
 import qualified System.Environment as Env
 import qualified System.Exit as Exit
-import qualified System.Random as Random
 import Urbit.Airlock
 
 main :: IO ()
@@ -37,7 +33,7 @@ main = do
 
   testing "poke ship" $
     isJust <$> do
-      uid <- UUID.nextRandom
+      uuid <- UUID.nextRandom
       r <-
         poke sess ship "zod" "chat-hook" "json" $
           Aeson.object
@@ -46,7 +42,7 @@ main = do
                   [ "path" .= Text.pack "/~/~zod/mc",
                     "envelope"
                       .= Aeson.object
-                        [ "uid" .= UUID.toText uid,
+                        [ "uid" .= UUID.toText uuid,
                           "number" .= (1 :: Int), -- FIXME: should this be lastEventId?
                           "author" .= Text.pack "~zod",
                           "when" .= (1602118786225 :: Int),
