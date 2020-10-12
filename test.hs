@@ -19,12 +19,14 @@ import qualified Data.Word as Word
 import qualified Network.Wreq as Wreq
 import qualified Network.Wreq.Session as Session
 import qualified Numeric
+import qualified System.Environment as Env
 import qualified System.Random as Random
 import Urbit.Airlock
 
 main :: IO ()
 main = do
-  let ship = fakezod
+  port <- Env.getEnv "PORT"
+  let ship = fakezod port
   sess <- Session.newSession
 
   testing "ship connection" $
@@ -59,13 +61,13 @@ main = do
       return $ r ^? Wreq.responseBody
 
 
-fakezod :: Ship
-fakezod =
+fakezod :: String -> Ship
+fakezod port =
   Ship
     { uid = "0123456789abcdef",
       name = "zod",
       lastEventId = 1,
-      url = "http://localhost:8081",
+      url = "http://localhost:" ++ port,
       code = "lidlut-tabwed-pillex-ridrup",
       sseClient = False
     }

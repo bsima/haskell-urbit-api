@@ -4,6 +4,7 @@ before_script:
   - tar xzf urbit-v0.10.8-linux64.tgz
   - install ./urbit-v0.10.8-linux64/urbit ~/bin
   - export PATH=~/bin:$PATH
+  - export PORT=8080
   - ./fakezod.sh -d
 script:
   - nix-build

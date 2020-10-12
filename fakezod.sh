@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -ex
 if [[ -d ./zod ]]
 then
     urbit $@ zod
