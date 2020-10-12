@@ -1,13 +1,13 @@
 language: nix
 before_script:
-  - mkdir urbit
-  - cd urbit
   - curl -O https://bootstrap.urbit.org/urbit-v0.10.8-linux64.tgz
   - tar xzf urbit-v0.10.8-linux64.tgz
-  - ./urbit-v0.10.8-linux64/urbit -dF zod
+  - install ./urbit-v0.10.8-linux64/urbit ~/bin
+  - export PATH=~/bin:$PATH
+  - ./fakezod.sh -d
 script:
   - nix-build
   - nix-shell --run "runghc ./test.hs"
 after_script:
   # kill the urbit daemon
-  - ps aux|grep "\-d zod"|grep -v grep|tr -s " "|cut -f2 -d" "|xargs kill -9
+  - ps aux|grep "\-dF zod"|grep -v grep|tr -s " "|cut -f2 -d" "|xargs kill -9

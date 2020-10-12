@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if [[ -d ./zod ]]
 then
-    urbit zod
+    urbit $@ zod
 else
-    urbit -F zod
+    urbit $@ -F zod
 fi
