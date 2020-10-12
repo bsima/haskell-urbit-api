@@ -1,5 +1,5 @@
 { mkDerivation, aeson, base, bytestring, lens, stdenv, text, wai
-, wai-extra, wreq
+, wai-extra, wreq, uuid
 }:
 mkDerivation {
   pname = "urbit-airlock";
