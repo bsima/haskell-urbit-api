@@ -20,6 +20,7 @@ import qualified Network.Wreq as Wreq
 import qualified Network.Wreq.Session as Session
 import qualified Numeric
 import qualified System.Environment as Env
+import qualified System.Exit as Exit
 import qualified System.Random as Random
 import Urbit.Airlock
 
@@ -79,9 +80,9 @@ testing description f =
   (putStrLn $ replicate 80 '-') >> try f >>= \case
     Left (err :: SomeException) -> do
       Text.IO.putStrLn $ "FAIL: " <> description
-      putStrLn $ show err
+      Exit.die $ show err
     Right False -> do
       Text.IO.putStrLn $ "FAIL: " <> description
-      putStrLn $ "expected True, got False"
+      Exit.die "expected True, got False"
     Right True ->
       Text.IO.putStrLn $ "PASS: " <> description
