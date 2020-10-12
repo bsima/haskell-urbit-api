@@ -44,9 +44,9 @@ main = do
                     "envelope"
                       .= Aeson.object
                         [ "uid" .= UUID.toText uid,
-                          "number" .= lastEventId ship,
+                          "number" .= (1 :: Int), -- FIXME: should this be lastEventId?
                           "author" .= Text.pack "~zod",
-                          "when" .= Text.pack "1602118786225.497", -- int(time.time() * 1000)
+                          "when" .= (1602118786225 :: Int),
                           "letter" .= Aeson.object ["text" .= Text.pack "hello world!"]
                         ]
                   ]
@@ -64,7 +64,7 @@ fakezod =
   Ship
     { uid = "0123456789abcdef",
       name = "zod",
-      lastEventId = 0,
+      lastEventId = 1,
       url = "http://localhost:8081",
       code = "lidlut-tabwed-pillex-ridrup",
       sseClient = False
