@@ -5,6 +5,8 @@ before_script:
   - install ./urbit-v0.10.8-linux64/urbit ~/bin
   - export PATH=~/bin:$PATH
   - export PORT=8080
+  # cleanup
+  - find . -name zod -type d -exec rm -rf {} \;
   - ./fakezod.sh -d
 script:
   - nix-build
