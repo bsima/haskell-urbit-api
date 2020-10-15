@@ -1,4 +1,6 @@
 language: nix
+os: linux
+dist: xenial
 # 'vm' means use the full VM, which has 7.5G memory, instead of an LXD
 # container which has "~4G"
 virt: vm
