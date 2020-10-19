@@ -8,6 +8,7 @@ module Urbit.Airlock
     connect,
     poke,
     ack,
+    subscribe,
   )
 where
 
@@ -15,13 +16,16 @@ import Control.Lens ()
 import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Data.Text.Encoding as Encoding
+import Network.Http.Client as Client
 import Network.Wreq (FormParam ((:=)))
 import qualified Network.Wreq as Wreq
 import qualified Network.Wreq.Session as Session
+import System.IO.Streams (InputStream, OutputStream)
+import qualified System.IO.Streams as Streams
 
 -- import qualified Network.Wai.EventSource as Event
 
@@ -51,8 +55,6 @@ type App = Text
 type Path = Text
 
 type Mark = Text
-
-type Subscription = Text
 
 -- | The `@p` for the ship (no leading ~).
 type ShipName = Text
@@ -105,18 +107,10 @@ ack sess ship eventId =
           "event-id" .= eventId
         ]
 
--- TODO
--- ssePipe :: Ship -> IO _
--- ssePipe ship = undefined
-
 -- |
-subscribe :: Ship -> App -> Path -> IO Subscription
-subscribe = undefined
-
--- |
-unsubscribe :: Ship -> Subscription -> IO ()
-unsubscribe = undefined
-
--- |
-delete :: Ship -> IO ()
-delete = undefined
+subscribe :: Ship -> Path -> OutputStream ByteString -> IO ()
+subscribe ship path outfn = Client.get addr handle
+  where
+    handle :: Response -> InputStream ByteString -> IO ()
+    handle _ i = Streams.connect i outfn
+    addr = Char8.pack $ (url ship) ++ "/" ++ Text.unpack path
