@@ -5,6 +5,11 @@ dist: xenial
 # container which has "~4G"
 virt: vm
 before_script:
+  # get more swap
+  - sudo fallocate -l 4G /swapfile
+  - sudo chmod 600 /swapfile
+  - sudo mkswap /swapfile
+  - sudo swapon /swapfile
   # get urbit
   - curl -O https://bootstrap.urbit.org/urbit-v0.10.8-linux64.tgz
   - tar xzf urbit-v0.10.8-linux64.tgz
