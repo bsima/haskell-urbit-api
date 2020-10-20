@@ -46,7 +46,7 @@ main = do
                           "number" .= (1 :: Int), -- FIXME: should this be lastEventId?
                           "author" .= Text.pack "~zod",
                           "when" .= (1602118786225 :: Int),
-                          "letter" .= Aeson.object ["text" .= Text.pack "hello world!"]
+                          "letter" .= Aeson.object ["text" .= Text.pack "hello world from haskell!"]
                         ]
                   ]
             ]

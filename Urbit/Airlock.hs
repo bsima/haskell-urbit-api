@@ -86,14 +86,15 @@ poke sess ship shipName app mark json =
     sess
     (channelUrl ship)
     $ Aeson.toJSON $
-      Aeson.object
-        [ "id" .= nextEventId ship,
-          "action" .= Text.pack "poke",
-          "ship" .= shipName,
-          "app" .= app,
-          "mark" .= mark,
-          "json" .= json
-        ]
+      [ Aeson.object
+          [ "id" .= nextEventId ship,
+            "action" .= Text.pack "poke",
+            "ship" .= shipName,
+            "app" .= app,
+            "mark" .= mark,
+            "json" .= json
+          ]
+      ]
 
 -- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
 ack :: Session.Session -> Ship -> Int -> IO (Wreq.Response L.ByteString)
@@ -102,10 +103,11 @@ ack sess ship eventId =
     sess
     (channelUrl ship)
     $ Aeson.toJSON $
-      Aeson.object
-        [ "action" .= Text.pack "ack",
-          "event-id" .= eventId
-        ]
+      [ Aeson.object
+          [ "action" .= Text.pack "ack",
+            "event-id" .= eventId
+          ]
+      ]
 
 -- |
 subscribe :: Ship -> Path -> OutputStream ByteString -> IO ()
