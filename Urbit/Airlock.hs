@@ -110,7 +110,13 @@ ack sess ship eventId =
       ]
 
 -- |
-subscribe :: Ship -> Path -> OutputStream ByteString -> IO ()
+subscribe ::
+  Ship ->
+  Path ->
+  -- | A handler function to receiv the response from the server, e.g.
+  -- 'System.IO.Streams.stdout`.
+  OutputStream ByteString ->
+  IO ()
 subscribe ship path outfn = Client.get addr handle
   where
     handle :: Response -> InputStream ByteString -> IO ()
