@@ -57,7 +57,6 @@ main = do
       r <- ack sess ship 1
       return $ r ^? Wreq.responseBody
 
-
 fakezod :: String -> Ship
 fakezod port =
   Ship
@@ -65,10 +64,8 @@ fakezod port =
       name = "zod",
       lastEventId = 1,
       url = "http://localhost:" ++ port,
-      code = "lidlut-tabwed-pillex-ridrup",
-      sseClient = False
+      code = "lidlut-tabwed-pillex-ridrup"
     }
-
 
 -- | Poor man's testing framework
 testing :: Text -> IO Bool -> IO ()

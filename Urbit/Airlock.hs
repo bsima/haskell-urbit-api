@@ -20,6 +20,7 @@ import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
 import qualified Data.Text as Text
+import Data.UUID.V4 as UUID
 import Network.Http.Client as Client
 import Network.Wreq (FormParam ((:=)))
 import qualified Network.Wreq as Wreq
@@ -36,17 +37,16 @@ data Ship = Ship
     name :: ShipName,
     -- | Track the latest event we saw (needed for poking).
     lastEventId :: Int,
-    -- | Internet-facing access point, like 'http://sampel-palnet.arvo.network'
+    -- | Network access point, with port if necessary. Like
+    -- 'https://sampel-palnet.arvo.network', or 'http://localhost:8080'.
     url :: Url,
     -- | Login code, `+code` in the dojo. Don't share this publically.
-    code :: Text,
-    -- | Not implemented yet...
-    sseClient :: Bool
+    code :: Text
   }
   deriving (Show)
 
 channelUrl :: Ship -> String
-channelUrl Ship {url} = url <> "/~/channel/1234567890abcdef"
+channelUrl Ship {url, uid} = url <> "/~/channel/" <> Text.unpack uid
 
 type Url = String
 
