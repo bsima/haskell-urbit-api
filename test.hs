@@ -5,36 +5,29 @@
 module Main where
 
 import Control.Exception (SomeException (..), try)
-import Control.Lens ((^?))
 import Data.Aeson (KeyValue ((.=)))
 import qualified Data.Aeson as Aeson
-import Data.Maybe (isJust)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
 import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
-import qualified Network.Wreq as Wreq
-import qualified Network.Wreq.Session as Session
 import qualified System.Environment as Env
 import qualified System.Exit as Exit
 import Urbit.Airlock
 
 main :: IO ()
 main = do
-  port <- Env.getEnv "PORT"
+  port <- Text.pack <$> Env.getEnv "PORT"
   let ship = fakezod port
-  sess <- Session.newSession
-
+  sess <- connect ship
   testing "ship connection" $
-    isJust <$> do
-      r <- connect sess ship
-      return $ r ^? Wreq.responseBody
+    connect ship >> return True
 
   testing "poke ship" $
-    isJust <$> do
+    do
       uuid <- UUID.nextRandom
-      r <-
+      _ <-
         poke sess ship "zod" "chat-hook" "json" $
           Aeson.object
             [ "message"
@@ -50,20 +43,18 @@ main = do
                         ]
                   ]
             ]
-      return $ r ^? Wreq.responseBody
+      return $ True
 
   testing "ack" $
-    isJust <$> do
-      r <- ack sess ship 1
-      return $ r ^? Wreq.responseBody
+    ack sess ship 1 >> return True
 
-fakezod :: String -> Ship
+fakezod :: Text -> Ship
 fakezod port =
   Ship
     { uid = "0123456789abcdef",
       name = "zod",
       lastEventId = 1,
-      url = "http://localhost:" ++ port,
+      url = "http://localhost:" <> port,
       code = "lidlut-tabwed-pillex-ridrup"
     }
 

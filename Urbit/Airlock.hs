@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -16,19 +18,14 @@ import Control.Lens ()
 import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Lazy as L
+import Conduit ((.|), runConduitRes, Void, ConduitM, ResourceT)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import Data.UUID.V4 as UUID
-import Network.Http.Client as Client
-import Network.Wreq (FormParam ((:=)))
-import qualified Network.Wreq as Wreq
-import qualified Network.Wreq.Session as Session
-import System.IO.Streams (InputStream, OutputStream)
-import qualified System.IO.Streams as Streams
-
--- import qualified Network.Wai.EventSource as Event
+import qualified Network.HTTP.Client as HTTP
+import Network.HTTP.Req ((=:))
+import qualified Network.HTTP.Req as Req
+import Network.HTTP.Req.Conduit as Conduit
+import qualified Text.URI as URI
 
 data Ship = Ship
   { -- | A random string for your channel.
@@ -39,16 +36,14 @@ data Ship = Ship
     lastEventId :: Int,
     -- | Network access point, with port if necessary. Like
     -- 'https://sampel-palnet.arvo.network', or 'http://localhost:8080'.
-    url :: Url,
+    url :: Text,
     -- | Login code, `+code` in the dojo. Don't share this publically.
     code :: Text
   }
   deriving (Show)
 
-channelUrl :: Ship -> String
-channelUrl Ship {url, uid} = url <> "/~/channel/" <> Text.unpack uid
-
-type Url = String
+channelUrl :: Ship -> Text
+channelUrl Ship {url, uid} = url <> "/~/channel/" <> uid
 
 type App = Text
 
@@ -63,15 +58,26 @@ type ShipName = Text
 nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
+type Session = HTTP.CookieJar
+
 -- | Connect and login to the ship.
-connect :: Session.Session -> Ship -> IO (Wreq.Response L.ByteString)
-connect sess ship =
-  Session.post sess (url ship <> "/~/login") ["password" := (code ship)]
+connect :: Ship -> IO Session
+connect ship =
+  Req.useURI <$> (URI.mkURI $ url ship <> "/~/login") >>= \case
+    Nothing -> error "could not parse ship url"
+    Just uri ->
+      Req.runReq Req.defaultHttpConfig $
+        Req.responseCookieJar <$> either con con uri
+  where
+    body = "password" =: (code ship)
+    con (url, opts) =
+      Req.req Req.POST url (Req.ReqBodyUrlEnc body) Req.ignoreResponse $
+        opts
 
 -- | Poke a ship.
 poke ::
   Aeson.ToJSON a =>
-  Session.Session ->
+  Session ->
   Ship ->
   -- | To what ship will you send the poke?
   ShipName ->
@@ -80,12 +86,22 @@ poke ::
   -- | What mark should be applied to the data you are sending?
   Mark ->
   a ->
-  IO (Wreq.Response L.ByteString)
+  IO Req.IgnoreResponse
 poke sess ship shipName app mark json =
-  Session.post
-    sess
-    (channelUrl ship)
-    $ Aeson.toJSON $
+  Req.useURI <$> (URI.mkURI $ channelUrl ship) >>= \case
+    Nothing -> error "could not parse ship url"
+    Just uri ->
+      Req.runReq Req.defaultHttpConfig $
+        either con con uri
+  where
+    con (url, opts) =
+      Req.req
+        Req.POST
+        url
+        (Req.ReqBodyJson body)
+        Req.ignoreResponse
+        $ opts <> Req.cookieJar sess
+    body =
       [ Aeson.object
           [ "id" .= nextEventId ship,
             "action" .= Text.pack "poke",
@@ -97,28 +113,48 @@ poke sess ship shipName app mark json =
       ]
 
 -- | Acknowledge receipt of a message. (This clears it from the ship's queue.)
-ack :: Session.Session -> Ship -> Int -> IO (Wreq.Response L.ByteString)
+ack :: Session -> Ship -> Int -> IO Req.IgnoreResponse
 ack sess ship eventId =
-  Session.post
-    sess
-    (channelUrl ship)
-    $ Aeson.toJSON $
+  Req.useURI <$> (URI.mkURI $ channelUrl ship) >>= \case
+    Nothing -> error "could not parse ship url"
+    Just uri ->
+      Req.runReq Req.defaultHttpConfig $
+        either con con uri
+  where
+    con (url, opts) =
+      Req.req
+        Req.POST
+        url
+        (Req.ReqBodyJson body)
+        Req.ignoreResponse
+        $ opts <> Req.cookieJar sess
+    body =
       [ Aeson.object
           [ "action" .= Text.pack "ack",
             "event-id" .= eventId
           ]
       ]
 
--- |
+-- | Subscribe to ship events on some path.
 subscribe ::
+  Session ->
   Ship ->
   Path ->
-  -- | A handler function to receiv the response from the server, e.g.
-  -- 'System.IO.Streams.stdout`.
-  OutputStream ByteString ->
-  IO ()
-subscribe ship path outfn = Client.get addr handle
+  -- | A handler function to receive the response from the server, e.g.
+  -- 'Data.Conduit.Binary.sinkFile "my-file.out"'.
+  ConduitM ByteString Void (ResourceT IO) a ->
+  IO a
+subscribe sess ship path fn =
+  Req.useURI <$> (URI.mkURI $ url ship <> "/" <> path) >>= \case
+    Nothing -> error "could not parse ship url"
+    Just uri -> Req.runReq Req.defaultHttpConfig $ do
+      either con con uri $ \r ->
+        runConduitRes $
+          responseBodySource r .| fn
   where
-    handle :: Response -> InputStream ByteString -> IO ()
-    handle _ i = Streams.connect i outfn
-    addr = Char8.pack $ (url ship) ++ "/" ++ Text.unpack path
+    con (url, opts) =
+      Req.reqBr
+        Req.POST
+        url
+        Req.NoReqBody
+        $ opts <> Req.cookieJar sess

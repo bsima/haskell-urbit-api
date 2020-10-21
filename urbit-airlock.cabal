@@ -21,14 +21,17 @@ library
     base >= 4.7 && < 5,
     aeson,
     bytestring,
-    http-streams,
-    io-streams,
+    conduit,
+    conduit-extra,
+    http-client,
     lens,
+    modern-uri,
+    req,
+    req-conduit,
     text,
     uuid,
     wai,
-    wai-extra,
-    wreq
+    wai-extra
 
 -- executable urlock
 --   hs-source-dirs:      .

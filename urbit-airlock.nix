@@ -1,17 +1,15 @@
-{ mkDerivation, aeson, base, bytestring, lens, stdenv, text, wai
-, wai-extra, wreq, uuid, http-streams, io-streams
+{ mkDerivation, aeson, base, bytestring, conduit, conduit-extra
+, http-client, lens, modern-uri, req, req-conduit, stdenv, text
+, uuid, wai, wai-extra
 }:
 mkDerivation {
   pname = "urbit-airlock";
   version = "0.1.0.0";
   src = ./.;
-  isLibrary = true;
-  isExecutable = true;
   libraryHaskellDepends = [
-    aeson base bytestring http-streams lens text uuid wai wai-extra wreq
+    aeson base bytestring conduit conduit-extra http-client lens
+    modern-uri req req-conduit text uuid wai wai-extra
   ];
-  executableHaskellDepends = [ base ];
-  testHaskellDepends = [ base ];
   homepage = "https://github.com/bsima/urbit-airlock";
   license = stdenv.lib.licenses.bsd3;
 }
