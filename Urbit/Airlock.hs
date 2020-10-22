@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Urbit.Airlock
   ( Ship (..),
@@ -14,17 +16,19 @@ module Urbit.Airlock
   )
 where
 
+import Conduit (ConduitM, runConduitRes, (.|))
+import qualified Conduit
+import qualified Control.Exception as Exception
 import Control.Lens ()
 import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 import Data.ByteString (ByteString)
-import Conduit ((.|), runConduitRes, Void, ConduitM, ResourceT)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Req ((=:))
 import qualified Network.HTTP.Req as Req
-import Network.HTTP.Req.Conduit as Conduit
+import qualified Network.HTTP.Req.Conduit as Req
 import qualified Text.URI as URI
 
 data Ship = Ship
@@ -135,25 +139,31 @@ ack sess ship eventId =
           ]
       ]
 
+instance Req.MonadHttp (ConduitM i o (Conduit.ResourceT IO)) where
+  handleHttpException = Conduit.liftIO . Exception.throwIO
+
 -- | Subscribe to ship events on some path.
 subscribe ::
   Session ->
   Ship ->
   Path ->
-  -- | A handler function to receive the response from the server, e.g.
+  -- | A handler conduit to receive the response from the server, e.g.
   -- 'Data.Conduit.Binary.sinkFile "my-file.out"'.
-  ConduitM ByteString Void (ResourceT IO) a ->
+  ConduitM ByteString Conduit.Void (Conduit.ResourceT IO) a ->
   IO a
 subscribe sess ship path fn =
   Req.useURI <$> (URI.mkURI $ url ship <> "/" <> path) >>= \case
     Nothing -> error "could not parse ship url"
-    Just uri -> Req.runReq Req.defaultHttpConfig $ do
-      either con con uri $ \r ->
-        runConduitRes $
-          responseBodySource r .| fn
+    Just uri -> runConduitRes $ do
+      either con con uri $ \request manager ->
+        Conduit.bracketP
+          (HTTP.responseOpen request manager)
+          HTTP.responseClose
+          Req.responseBodySource
+          .| fn
   where
     con (url, opts) =
-      Req.reqBr
+      Req.req'
         Req.POST
         url
         Req.NoReqBody

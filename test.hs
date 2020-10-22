@@ -5,6 +5,7 @@
 module Main where
 
 import Control.Exception (SomeException (..), try)
+import qualified Data.Conduit.Binary
 import Data.Aeson (KeyValue ((.=)))
 import qualified Data.Aeson as Aeson
 import Data.Text (Text)
@@ -47,6 +48,10 @@ main = do
 
   testing "ack" $
     ack sess ship 1 >> return True
+
+  testing "subscribe" $ do
+    s <- subscribe sess ship "/mailbox/~/~zod/mc" Data.Conduit.Binary.sinkLbs
+    return True
 
 fakezod :: Text -> Ship
 fakezod port =
