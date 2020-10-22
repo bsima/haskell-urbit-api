@@ -49,8 +49,14 @@ main = do
   testing "ack" $
     ack sess ship 1 >> return True
 
+  -- These tests are basically just checking that a connection happens and
+  -- doesn't throw, I need to pull in async in order to check for more
+  -- correctness. Ideally: subscribe, send a message, then read the message to
+  -- ensure its the same as the one sent. But maybe this is already tested in
+  -- urbit core?
+
   testing "subscribe" $ do
-    s <- subscribe sess ship "/mailbox/~/~zod/mc" Data.Conduit.Binary.sinkLbs
+    _ <- subscribe sess ship "/mailbox/~/~zod/mc" Data.Conduit.Binary.sinkLbs
     return True
 
 fakezod :: Text -> Ship
