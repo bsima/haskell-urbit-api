@@ -31,6 +31,7 @@ import qualified Network.HTTP.Req as Req
 import qualified Network.HTTP.Req.Conduit as Req
 import qualified Text.URI as URI
 
+-- | Some information about your ship needed to establish connection.
 data Ship = Ship
   { -- | A random string for your channel.
     uid :: Text,
@@ -58,7 +59,6 @@ type Mark = Text
 -- | The `@p` for the ship (no leading ~).
 type ShipName = Text
 
--- |
 nextEventId :: Ship -> Int
 nextEventId Ship {lastEventId} = lastEventId + 1
 
