@@ -116,6 +116,7 @@ poke ::
   Text ->
   -- | The mark of the message you are sending
   Text ->
+  -- | The actual JSON message, serialized via aeson
   a ->
   IO Req.BsResponse
 poke sess ship shipName app mark json =
