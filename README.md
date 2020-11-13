@@ -2,6 +2,8 @@
 
 [![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Hackage](https://img.shields.io/hackage/v/urbit-airlock.svg?style=flat)](https://hackage.haskell.org/package/urbit-airlock)
+[![builds.sr.ht status](https://builds.sr.ht/~ben/urbit-airlock.svg)](https://builds.sr.ht/~ben/urbit-airlock?)
+
 
 
 This library helps you talk to your Urbit from Haskell, via HTTP.
