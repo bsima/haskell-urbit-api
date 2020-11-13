@@ -5,9 +5,9 @@
 module Main where
 
 import Control.Exception (SomeException (..), try)
-import qualified Data.Conduit.Binary
 import Data.Aeson (KeyValue ((.=)))
 import qualified Data.Aeson as Aeson
+import qualified Data.Conduit.Binary
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
