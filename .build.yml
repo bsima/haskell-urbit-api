@@ -1,18 +1,30 @@
 arch: null
 artifacts: []
-environment: {}
+environment:
+  NIXPKGS_ALLOW_BROKEN: 1
+  PORT: 8080
 image: nixos/20.09
 packages: []
-repositories:
-  nixpkgs: https://github.com/NixOS/nixpkgs/archive/13209156c191524437d5556bd8b24a132c4a899a.tar.gz
 secrets: []
 shell: false
+triggers: []
+
 sources:
 - https://github.com/bsima/urbit-airlock
+
 tasks:
 - build: |
-    export NIXPKGS_ALLOW_BROKEN=1
     cd urbit-airlock
     nix-build
-# - test: nix-shell --command "runghc ./test.hs"
-triggers: []
+#- test: |
+#    cd urbit-airlock
+#    # get urbit
+#    curl -O https://bootstrap.urbit.org/urbit-v0.10.8-linux64.tgz
+#    tar xzf urbit-v0.10.8-linux64.tgz
+#    mkdir ~/bin
+#    install ./urbit-v0.10.8-linux64/urbit ~/bin
+#    export PATH=~/bin:$PATH
+#    # start urbit daemon
+#    ./fakezod.sh
+#    # run tests
+#    nix-shell --command "runghc ./test.hs"
