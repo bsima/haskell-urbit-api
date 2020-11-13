@@ -1,4 +1,6 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc884" }:
+{ nixpkgs ? import (builtins.fetchTarball (import ./nixpkgs.nix)) {}
+, compiler ? "ghc884"
+}:
 
 nixpkgs.mkShell {
   name = "urbit-airlock-shell";
