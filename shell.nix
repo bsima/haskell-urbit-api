@@ -1,4 +1,4 @@
-{ nixpkgs ? import (builtins.fetchTarball (import ./nixpkgs.nix)) {}
+{ nixpkgs ? import ./nixpkgs.nix
 , compiler ? "ghc884"
 }:
 

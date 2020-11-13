@@ -4,7 +4,7 @@ environment: {}
 image: nixos/20.09
 packages: []
 repositories:
-  nixpkgs: https://github.com/NixOS/nixpkgs/archive/nixos-20.09.tar.gz
+  nixpkgs: https://github.com/NixOS/nixpkgs/archive/13209156c191524437d5556bd8b24a132c4a899a.tar.gz
 secrets: []
 shell: false
 sources:
