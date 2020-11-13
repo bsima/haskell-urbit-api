@@ -1,0 +1,18 @@
+arch: null
+artifacts: []
+environment: {}
+image: nixos/20.09
+packages: []
+repositories:
+  nixpkgs: https://github.com/NixOS/nixpkgs/archive/nixos-20.09.tar.gz
+secrets: []
+shell: false
+sources:
+- https://github.com/bsima/urbit-airlock
+tasks:
+- build: |
+    export NIXPKGS_ALLOW_BROKEN=1
+    cd urbit-airlock
+    nix-build
+# - test: nix-shell --command "runghc ./test.hs"
+triggers: []
