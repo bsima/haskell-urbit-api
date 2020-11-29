@@ -79,3 +79,5 @@ main = do
 - add an exe that wraps the library with a cli
 - port to ghcjs
 - put some examples in the docs
+- graph store interface
+- additional agent interfaces
