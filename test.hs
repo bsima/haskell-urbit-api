@@ -15,7 +15,7 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
 import qualified System.Environment as Env
 import qualified System.Exit as Exit
-import Urbit.Airlock
+import Urbit.API
 
 main :: IO ()
 main = do

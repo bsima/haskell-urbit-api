@@ -3,7 +3,7 @@
 }:
 
 nixpkgs.mkShell {
-  name = "urbit-airlock-shell";
+  name = "urbit-api-shell";
   buildInputs = [
     nixpkgs.ormolu.bin
 

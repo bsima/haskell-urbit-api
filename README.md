@@ -1,15 +1,15 @@
 # Haskell Urbit API
 
 [![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
-[![Hackage](https://img.shields.io/hackage/v/urbit-airlock.svg?style=flat)](https://hackage.haskell.org/package/urbit-airlock)
-[![builds.sr.ht status](https://builds.sr.ht/~ben/urbit-airlock.svg)](https://builds.sr.ht/~ben/urbit-airlock?)
+[![Hackage](https://img.shields.io/hackage/v/urbit-api.svg?style=flat)](https://hackage.haskell.org/package/urbit-api)
+[![builds.sr.ht status](https://builds.sr.ht/~ben/urbit-api.svg)](https://builds.sr.ht/~ben/urbit-api?)
 
 
 
 This library helps you talk to your Urbit from Haskell, via HTTP.
 
-The "Urbit Airlock" API is a command-query API that lets you hook into apps
-running on your Urbit. You can submit commands (called "pokes") and subscribe to
+The Urbit API is a command-query API that lets you hook into apps running on
+your Urbit. You can submit commands (called "pokes") and subscribe to
 responses.
 
 See the `test.hs` file for some example usages.
@@ -22,9 +22,9 @@ the API is `/~/channel/...`, where we send messages to the global log (called
 responses, we stream messages from a path associated with the app, such as
 `/mailbox/~/~zod/mc`. Internally, I believe Urbit calls these `wire`s.
 
-`urbit-airlock` handles most of the path, session, and HTTP request stuff
+`urbit-api` handles most of the path, session, and HTTP request stuff
 automatically. See the
-[haddocks](https://hackage.haskell.org/package/urbit-airlock/docs/Urbit-Airlock.html)
+[haddocks](https://hackage.haskell.org/package/urbit-api/docs/Urbit-API.html)
 for more details.
 
 This library is built on req, conduit, and aeson, all of which are very stable
@@ -38,7 +38,7 @@ import Data.Aeson ((.=))
 import qualified Data.Text as Text
 import qualified Data.UUID.V4 as UUID
 
-import Urbit.Airlock
+import Urbit.API
 
 main :: IO ()
 main = do

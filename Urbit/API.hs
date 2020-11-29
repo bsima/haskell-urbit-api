@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- |
--- Module: Urbit.Airlock
+-- Module: Urbit.API
 -- Copyright: © 2020–present Ben Sima
 -- License: MIT
 --
@@ -16,8 +16,8 @@
 --
 -- === About the Urbit API
 --
--- The "Urbit Airlock" API is a command-query API that lets you hook into apps
--- running on your Urbit. You can submit commands and subscribe to responses.
+-- The Urbit API is a command-query API that lets you hook into apps running on
+-- your Urbit. You can submit commands and subscribe to responses.
 --
 -- The Urbit vane @eyre@ is responsible for defining the API interface. The HTTP
 -- path to the API is @\/~\/channel\/...@, where we send messages to the global
@@ -37,7 +37,7 @@
 -- This library is built on req, conduit, and aeson, all of which are very
 -- stable and usable libraries for working with HTTP requests and web data.
 -- Released under the MIT License, same as Urbit.
-module Urbit.Airlock
+module Urbit.API
   ( -- * Types
     Ship (..),
     Session,
