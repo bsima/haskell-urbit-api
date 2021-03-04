@@ -3,6 +3,7 @@
 [![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Hackage](https://img.shields.io/hackage/v/urbit-api.svg?style=flat)](https://hackage.haskell.org/package/urbit-api)
 [![builds.sr.ht status](https://builds.sr.ht/~ben/urbit-api.svg)](https://builds.sr.ht/~ben/urbit-api?)
+[![awesome urbit badge](https://img.shields.io/badge/~-awesome%20urbit-lightgrey)](https://github.com/urbit/awesome-urbit)
 
 
 
